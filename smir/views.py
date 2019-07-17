@@ -44,6 +44,7 @@ def profile(request):
     # Call the Tasks API
     results = task_service.tasklists().list(maxResults=10).execute()
     items = results.get('items', [])
+    user_tasks = []
     if not items:
         print('No task lists found.')
     else:
@@ -52,6 +53,6 @@ def profile(request):
             print(u'{0} ({1})'.format(item['title'], item['id']))
             tasks = task_service.tasks().list(tasklist=item['id']).execute()
             for task in tasks['items']:
-                print(task['title'])
-
+                user_tasks.append(task['title'])
+        print(user_tasks)
     return render(request, 'profile.html', {'events': events})
