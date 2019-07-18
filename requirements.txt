@@ -3,4 +3,5 @@ google_auth
 google_auth_oauthlib
 django
 google-api-python-client
-paho
+paho-mqtt
+python-etcd
