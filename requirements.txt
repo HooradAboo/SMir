@@ -5,3 +5,4 @@ django
 google-api-python-client
 paho-mqtt
 python-etcd
+oauth2client
