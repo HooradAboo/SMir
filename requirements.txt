@@ -1,3 +1,4 @@
 social_auth_app_django
 google_auth
 google_auth_oauthlib
+django
