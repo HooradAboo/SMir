@@ -1,17 +1,11 @@
 import paho.mqtt.client as mqtt
 
 
-def on_connect(client, userdata, rc):
-    client.subscribe("$SYS/#")
-
-
-def on_message(client, userdata, msg):
-    # Do something
-    pass
+def on_log(client, userdata, level, buf):
+    print("log: ", buf)
 
 
 client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
+client.on_log = on_log
+client.connect("127.0.0.1", 1883, 60)
 
-client.connect("iot.eclipse.org", 1883, 60)

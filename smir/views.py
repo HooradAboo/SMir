@@ -1,8 +1,11 @@
 import datetime
+import json
+
 from django.shortcuts import render, redirect
 from googleapiclient.discovery import build
 from smir.models import UserCredentials
 from .utils import refresh_token
+from .mqtt import client
 
 
 def index(request):
@@ -11,7 +14,7 @@ def index(request):
             UserCredentials.objects.get(user=request.user)
             return redirect('/profile')
         except UserCredentials.DoesNotExist:
-            return redirect('/user-face-data')
+            return redirect('user_face_data')
 
     else:
         return redirect('/login')
@@ -23,6 +26,18 @@ def my_login(request):
 
 def profile(request):
     creds = refresh_token(request.user.username)
+    service = build('gmail', 'v1', credentials=creds)
+
+    # Call the Gmail API
+    results = service.users().labels().list(userId=request.user.username).execute()
+    labels = results.get('labels', [])
+
+    if not labels:
+        print('No labels found.')
+    else:
+        print('Labels:')
+        for label in labels:
+            print(label['name'])
     service = build('calendar', 'v3', credentials=creds)
 
     # Call the Calendar API
@@ -55,4 +70,6 @@ def profile(request):
             for task in tasks['items']:
                 user_tasks.append(task['title'])
         print(user_tasks)
+        tasks_json = json.dumps(user_tasks)
+        client.publish(topic="user/info", payload=tasks_json)
     return render(request, 'profile.html', {'events': events})

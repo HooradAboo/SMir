@@ -5,3 +5,7 @@ django
 google-api-python-client
 paho-mqtt
 python-etcd
+channels==1.1.6
+asgi-redis
+asgimqtt
+
