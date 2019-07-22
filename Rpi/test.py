@@ -10,4 +10,4 @@ calendar = {"tasks": [{"tasks": ["Finish Project", ""], "task_list": "My Tasks"}
 
 
 
-print(calendar['weather'])
+print(calendar['weather']['weather'][0]['description'])

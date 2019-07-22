@@ -1,36 +1,38 @@
-import SMir
-
 import sys
 from random import randint
 from datetime import datetime
+import time
 
 from PyQt5.QtCore import QTimer, Qt, QFile, QTextStream
 from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QApplication, \
     QLabel, QPlainTextEdit
 from pyqtgraph import PlotWidget, PlotDataItem
 
-calendar = {"tasks": [{"tasks": ["Finish Project", ""], "task_list": "My Tasks"}],
-            "weather": {"cod": 200, "wind": {"speed": 6.2, "deg": 140}, "dt": 1563779177,
-                        "sys": {"sunrise": 1563759255, "sunset": 1563810423, "type": 1, "country": "IR",
-                                "message": 0.0085, "id": 7464}, "clouds": {"all": 40}, "id": 112931,
-                        "visibility": 10000, "base": "stations", "timezone": 16200, "name": "Tehran",
-                        "weather": [{"main": "Clouds", "id": 802, "description": "scattered clouds", "icon": "03d"}],
-                        "coord": {"lat": 35.7, "lon": 51.4},
-                        "main": {"temp_max": 310.15, "humidity": 12, "temp_min": 310.15, "pressure": 1015,
-                                 "temp": 310.15}}, "calendar": [{"date": "2019-07-23T15:30:00+04:30", "event": "Kish"}]}
+info = {"tasks": [{"tasks": ["Finish Project", ""], "task_list": "My Tasks"}],
+        "weather": {"cod": 200, "wind": {"speed": 6.2, "deg": 140}, "dt": 1563779177,
+                    "sys": {"sunrise": 1563759255, "sunset": 1563810423, "type": 1, "country": "IR",
+                            "message": 0.0085, "id": 7464}, "clouds": {"all": 40}, "id": 112931,
+                    "visibility": 10000, "base": "stations", "timezone": 16200, "name": "Tehran",
+                    "weather": [{"main": "Clouds", "id": 802, "description": "scattered clouds", "icon": "03d"}],
+                    "coord": {"lat": 35.7, "lon": 51.4},
+                    "main": {"temp_max": 310.15, "humidity": 12, "temp_min": 310.15, "pressure": 1015,
+                             "temp": 310.15}}, "calendar": [{"date": "2019-07-23T15:30:00+04:30", "event": "Kish"},
+                                                            {"date": "2019-07-23T15:30:00+04:30", "event": "Kish"},
+                                                            {"date": "2019-07-23T15:30:00+04:30", "event": "Kish"}]}
 
 max_history = 10
 max_log = 2
 counter = 2
-temps = [0 * max_history]  # TODO
 fans = [0 * max_history]  # TODO
+temps = [1, 2, 3]
+currentDT = datetime.now()
+name = 'Mahtab'
 
-style = 'light'
-
-WINDOW_HEIGHT = 640
-WINDOW_WIDTH = 480
+WINDOW_HEIGHT = 1500
+WINDOW_WIDTH = 800
 
 TITLE_STYLES = 'margin: 10; font-size: 20px; font-weight: bold;'
+EVENT_STYLES = 'margin: 10; font-size: 15px;'
 
 
 class Screen(QWidget):
@@ -44,81 +46,96 @@ class Screen(QWidget):
         timer.timeout.connect(self.update_data)
         timer.start(1000)
 
-        temp_title = QLabel(
-            text='ُTemperature:',
+        self.name_title = QLabel(
+            text=name,
             alignment=Qt.AlignCenter,
             styleSheet=TITLE_STYLES,
         )
-        grid_layout.addWidget(temp_title)
-        self.temp_data = PlotDataItem(temps)
-        temp_widget = PlotWidget()
-        temp_widget.addItem(self.temp_data)
-        temp_widget.setXRange(0, max_history)
-        temp_widget.setYRange(-10, 60)
-        grid_layout.addWidget(temp_widget)
-
-        fan_title = QLabel(
-            text='Fan',
-            alignment=Qt.AlignCenter,
-            styleSheet=TITLE_STYLES,
-        )
-        grid_layout.addWidget(fan_title)
-        self.fan_data = PlotDataItem(fans)
-        fan_widget = PlotWidget()
-        fan_widget.addItem(self.fan_data)
-        fan_widget.setXRange(0, max_history)
-        fan_widget.setYRange(0, 100)
-        grid_layout.addWidget(fan_widget)
-
-        last_log_title = QLabel(
-            text='Latest Event',
-            alignment=Qt.AlignCenter,
-            styleSheet=TITLE_STYLES,
-        )
-        grid_layout.addWidget(last_log_title)
-        self.last_log = QLabel()
-        self.last_log.resize(WINDOW_HEIGHT, WINDOW_WIDTH)
-        self.last_log.setStyleSheet(
-            'font-weight: bold;'
-            'background-color: grey;'
+        grid_layout.addWidget(self.name_title)
+        self.clock_log = QLabel(alignment=Qt.AlignCenter,
+                                )
+        self.clock_log.resize(WINDOW_HEIGHT, WINDOW_WIDTH)
+        self.clock_log.setStyleSheet(
+            'font-weight: bold; font-size: 20px;'
         );
-        grid_layout.addWidget(self.last_log)
+        grid_layout.addWidget(self.clock_log)
 
-        logs_title = QLabel(
-            text='Event History',
+        w_title = QLabel(
+            text='Weather:',
+            alignment=Qt.AlignLeft,
+            styleSheet=EVENT_STYLES,
+        )
+        grid_layout.addWidget(w_title)
+
+        self.weather_title = QLabel(
+            text=info['weather']['weather'][0]['description'],
             alignment=Qt.AlignCenter,
             styleSheet=TITLE_STYLES,
         )
-        grid_layout.addWidget(logs_title)
-        self.logs = QPlainTextEdit(self)
-        self.logs.resize(WINDOW_HEIGHT, WINDOW_WIDTH)
-        self.logs.resize(400, 200)
-        grid_layout.addWidget(self.logs)
+        grid_layout.addWidget(self.weather_title)
 
-        self.setWindowTitle('Screen')
+        event_title = QLabel(
+            text='Upcoming Events:',
+            alignment=Qt.AlignLeft,
+            styleSheet=EVENT_STYLES,
+        )
+        grid_layout.addWidget(event_title)
+
+        self.events = QPlainTextEdit(self)
+        self.events.resize(WINDOW_HEIGHT, WINDOW_WIDTH)
+        self.events.resize(400, 200)
+        grid_layout.addWidget(self.events)
+
+        self.temp_title = QLabel(
+            text='Real feel:',
+            alignment=Qt.AlignLeft,
+            styleSheet=EVENT_STYLES,
+        )
+        grid_layout.addWidget(self.temp_title)
+        self.temp_log = QLabel(alignment=Qt.AlignCenter,
+                               )
+        self.temp_log.resize(WINDOW_HEIGHT, WINDOW_WIDTH)
+        self.temp_log.setStyleSheet(
+            'font-weight: bold; font-size: 20px'
+        );
+        grid_layout.addWidget(self.temp_log)
+
+        tasks_title = QLabel(
+            text='Upcoming Tasks:',
+            alignment=Qt.AlignLeft,
+            styleSheet=EVENT_STYLES,
+        )
+        grid_layout.addWidget(tasks_title)
+        self.tasks = QPlainTextEdit(self)
+        self.tasks.resize(WINDOW_HEIGHT, WINDOW_WIDTH)
+        self.tasks.resize(400, 200)
+        grid_layout.addWidget(self.tasks)
+
+        self.setWindowTitle('SMir')
 
     def update_data(self):
         global counter
 
-        # Fixme:  Foo data
-        temps.append(counter)
-        fans.append(counter)
-        new_log = f'Event {counter} happend'
+        self.temp_log.setText(str(temps[-1]) + ' °C')
+        self.name_title.setText(str(name))
+        self.weather_title.setText(info['weather']['weather'][0]['description'])
+        self.clock_log.setText(str(datetime.now().hour) + ':' + str(datetime.now().minute))
+        events = [event for event in info['calendar']]
 
-        counter += randint(-5, 10)
-        self.temp_data.setData(temps[-max_history:])
-        self.fan_data.setData(fans[-max_history:])
-
-        if new_log:
-            date_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            date_log = f'{date_time}: {new_log}'
-            self.logs.setPlainText(
-                f'{self.last_log.text()}'
+        if len(events) > 1:
+            self.events.setPlainText(
+                f'{events[0]["event"]}' + ': ' + f'{events[0]["date"]}'
                 '\n'
-                f'{self.logs.toPlainText()}'
+                f'{events[1]["event"]}' + ': ' + f'{events[1]["date"]}'
             )
-            self.last_log.setText(date_log)
+        else:
+            self.events.setPlainText(
+                f'{events[0]["event"]}' + ': ' + f'{events[0]["date"]}'
+            )
 
+        self.tasks.setPlainText(
+            f'{info["tasks"][0]["task_list"]}' + ': ' + f'{info["tasks"][0]["tasks"][0]}'
+        )
         self.update()
 
 
@@ -133,22 +150,15 @@ def toggle_stylesheet(path):
     app.setStyleSheet(stream.readAll())
 
     global style
-    style = 'dark' if style == 'light' else 'light'
+    style = 'dark'
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    toggle_stylesheet('theme/light.qss')
+    toggle_stylesheet('theme/dark.qss')
 
     screen = Screen()
     screen.setGeometry(100, 100, 400, 400)
-
-    dark_btn = QPushButton('Light/Dark', screen)
-    dark_btn.clicked.connect(
-        lambda: toggle_stylesheet(
-            'theme/dark.qss' if style == 'light' else 'theme/light.qss'
-        )
-    )
 
     screen.show()
 
