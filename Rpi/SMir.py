@@ -125,8 +125,6 @@ class Screen(QWidget):
         self.setWindowTitle('SMir')
 
     def update_data(self):
-        global counter
-
         self.temp_log.setText(str(temps[-1]) + ' °C')
         self.name_title.setText(str(name))
         self.weather_title.setText(info['weather']['weather'][0]['description'])
@@ -134,18 +132,17 @@ class Screen(QWidget):
         events = [event for event in info['calendar']]
 
         if len(events) > 1:
+            text = '{}, time: {}\n{}, time: {}'.format(events[0]["event"], events[0]["date"], events[1]["event"],
+                                                       events[1]["date"])
             self.events.setPlainText(
-                f'{events[0]["event"]}' + ': ' + f'{events[0]["date"]}'
-                '\n'
-                f'{events[1]["event"]}' + ': ' + f'{events[1]["date"]}'
+                text
             )
         else:
             self.events.setPlainText(
-                f'{events[0]["event"]}' + ': ' + f'{events[0]["date"]}'
+                '{}, time: {}'.format(events[0]["event"], events[0]["date"])
             )
-
         self.tasks.setPlainText(
-            f'{info["tasks"][0]["task_list"]}' + ': ' + f'{info["tasks"][0]["tasks"][0]}'
+            '{}: {}'.format(info["tasks"][0]["task_list"], info["tasks"][0]["tasks"][0])
         )
         self.update()
 
