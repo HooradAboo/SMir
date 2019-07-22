@@ -1,11 +1,11 @@
 import datetime
-import json
 
 from django.shortcuts import render, redirect
 from googleapiclient.discovery import build
+
 from smir.models import UserCredentials
-from .utils import refresh_token
 from .mqtt import client
+from .utils import refresh_token
 
 
 def index(request):
@@ -26,24 +26,12 @@ def my_login(request):
 
 def profile(request):
     creds = refresh_token(request.user.username)
-    service = build('gmail', 'v1', credentials=creds)
-
-    # Call the Gmail API
-    results = service.users().labels().list(userId=request.user.username).execute()
-    labels = results.get('labels', [])
-
-    if not labels:
-        print('No labels found.')
-    else:
-        print('Labels:')
-        for label in labels:
-            print(label['name'])
     service = build('calendar', 'v3', credentials=creds)
 
     # Call the Calendar API
-    now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+    time = (datetime.datetime.utcnow() - datetime.timedelta(days=2)).isoformat() + 'Z'  # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')
-    events_result = service.events().list(calendarId='primary', timeMin=now,
+    events_result = service.events().list(calendarId='primary', timeMin=time,
                                           maxResults=10, singleEvents=True,
                                           orderBy='startTime').execute()
     events = events_result.get('items', [])
@@ -70,6 +58,11 @@ def profile(request):
             for task in tasks['items']:
                 user_tasks.append(task['title'])
         print(user_tasks)
-        tasks_json = json.dumps(user_tasks)
-        client.publish(topic="user/info", payload=tasks_json)
     return render(request, 'profile.html', {'events': events})
+
+
+def user_get_data(request):
+    refresh_token(request.user.username)
+    client.publish(topic='camera/signup', payload=request.user.username)
+    return render(request, 'profile.html')
+

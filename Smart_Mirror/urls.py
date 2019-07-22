@@ -27,7 +27,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     path('login/', views.my_login, name='login'),
     path('profile/', views.profile, name='profile'),
-    path('get_data/', views.profile, name='user_face_data'),
+    path('get_data/', views.user_get_data, name='user_face_data'),
     path('', include('social_django.urls', namespace='social')),
     path('logout/', LogoutView.as_view(), {'next_page': settings.LOGOUT_REDIRECT_URL},
          name='logout'),
