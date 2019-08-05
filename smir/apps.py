@@ -6,4 +6,4 @@ class SmirConfig(AppConfig):
 
     def ready(self):
         from smir.mqtt import client
-        client.loop_forever()
+        client.loop_start()

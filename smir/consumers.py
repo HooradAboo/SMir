@@ -29,7 +29,7 @@ def on_mqtt_message(message):
             UserCredentials.objects.get(user__username=payload)
             creds = refresh_token(payload)
             weather = requests.get(
-                'http://api.openweathermap.org/data/2.5/weather?q=Tehran&appid=27929b8af5125779eaa943429a05ef19')
+                'http://api.openweathermap.org/data/2.5/weather?q=Tehran&appid=27929b8af5125779eaa943429a05ef19&units=metric')
             service = build('calendar', 'v3', credentials=creds)
             time = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
             print('Getting the upcoming 10 events')
@@ -54,11 +54,13 @@ def on_mqtt_message(message):
                 for item in items:
                     user_tasks = []
                     tasks = task_service.tasks().list(tasklist=item['id']).execute()
-                    for task in tasks['items']:
-                        user_tasks.append(task['title'])
+                    tasks = tasks.get('items', [])
+                    if tasks:
+                        for task in tasks:
+                            user_tasks.append(task['title'])
                     all_tasks.append({'task_list': item['title'], 'tasks': user_tasks})
                 print(all_tasks)
-            data = {'calendar': user_events, 'tasks': all_tasks, 'weather': weather}
+            data = {'calendar': user_events, 'tasks': all_tasks, 'weather': weather.json(), 'name': payload}
             data_json = json.dumps(data)
             client.publish(topic="user/info", payload=data_json)
         except UserCredentials.DoesNotExist:

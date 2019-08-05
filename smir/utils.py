@@ -18,8 +18,10 @@ def refresh_token(username):
     user_creds, created = UserCredentials.objects.get_or_create(user__username=username)
     if not created:
         credentials = os.path.join(BASE_DIR, 'tokens/{}_token.pickle'.format(user_creds.user.username))
+        print(credentials)
         with open(credentials, 'rb') as token:
             creds = pickle.load(token)
+            print(creds)
     else:
         credentials = os.path.join(BASE_DIR, 'tokens/{}_token.pickle'.format(username))
         user = User.objects.get(username=username)
